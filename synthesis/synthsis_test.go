@@ -6,7 +6,6 @@ import (
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
-	"github.com/wxxhub/go-speech-synthesis/player"
 	"github.com/wxxhub/go-speech-synthesis/synthesis/voice"
 	"sync"
 	"testing"
@@ -170,34 +169,10 @@ func TestDemo4(t *testing.T) {
 	w.Add(1)
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/60))
 	speaker.Play(beep.Seq(s, beep.Callback(func() {
-		fmt.Println("done1")
 		w.Done()
 	})))
 
 	w.Wait()
-}
-
-func TestPlayer(t *testing.T) {
-	p := player.InitPlayer(11000)
-
-	list := []voice.VOICE{voice.VOICE_NI3, voice.VOICE_HAO3, voice.VOICE_SHI4, voice.VOICE_JIE4, voice.VOICE_A}
-
-	b := bytes.NewBuffer(voice.GetVoice(voice.VOICE_NI3))
-	_, format, _ := wav.Decode(b)
-	for i := 0; i < 4; i++ {
-		bBuff := beep.NewBuffer(format)
-
-		for _, v := range list {
-			b := bytes.NewBuffer(voice.GetVoice(v))
-			t.Log(b.Len())
-			s, _, _ := wav.Decode(b)
-			bBuff.Append(s)
-		}
-
-		p.Append(bBuff)
-	}
-
-	time.Sleep(10 * time.Second)
 }
 
 func TestSynthesis(t *testing.T) {
@@ -205,5 +180,7 @@ func TestSynthesis(t *testing.T) {
 	defer s.Close()
 	s.Append("你好世界，你好世界s你好世界")
 
-	time.Sleep(50 * time.Second)
+	for s.Running() {
+		time.Sleep(time.Second)
+	}
 }
