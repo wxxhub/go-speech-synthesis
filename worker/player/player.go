@@ -1,8 +1,10 @@
 package player
 
 import (
+	"bytes"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
+	"github.com/wxxhub/go-speech-synthesis/worker/worker_interface"
 	"sync"
 	"time"
 )
@@ -16,13 +18,14 @@ type Player struct {
 	callFunc func()
 }
 
-func InitPlayer(sampleRate int, callFunc func()) *Player {
+var _ worker_interface.Worker = new(Player)
+
+func InitPlayer(sampleRate int) *Player {
 	s := beep.SampleRate(sampleRate)
 	speaker.Init(s, s.N(time.Millisecond))
 	p := &Player{
-		cancel:   make(chan struct{}, 1),
-		input:    make(chan *beep.Buffer, 1000),
-		callFunc: callFunc,
+		cancel: make(chan struct{}, 1),
+		input:  make(chan *beep.Buffer, 1000),
 	}
 
 	go p.run()
@@ -62,4 +65,12 @@ func (p *Player) Append(b *beep.Buffer) {
 
 func (p *Player) Close() {
 	p.cancel <- struct{}{}
+}
+
+func (p *Player) SetFinishCallBack(callFunc func()) {
+	p.callFunc = callFunc
+}
+
+func (p *Player) Delivery() *bytes.Buffer {
+	return nil
 }

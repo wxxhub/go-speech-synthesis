@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/wav"
-	"github.com/wxxhub/go-speech-synthesis/player"
 	"github.com/wxxhub/go-speech-synthesis/synthesis/voice"
-	"log"
+	"github.com/wxxhub/go-speech-synthesis/worker/worker_interface"
 	"regexp"
 	"sync"
 )
@@ -16,26 +15,26 @@ type Synthesis struct {
 	sampleRate beep.SampleRate
 
 	pinyin *voice.PinYin
-	player *player.Player
+	worker worker_interface.Worker
 
 	count int
 
 	runningMux sync.RWMutex
 }
 
-func InitSynthesis(sampleRate int) *Synthesis {
+func InitSynthesis(sampleRate int, w worker_interface.Worker) *Synthesis {
 	s := &Synthesis{
 		sampleRate: beep.SampleRate(sampleRate),
 		pinyin:     voice.InitPinYin(),
 		count:      0,
 	}
 
-	s.player = player.InitPlayer(DefaultSampleRate, s.call)
+	w.SetFinishCallBack(s.call)
+	s.worker = w
 	return s
 }
 
 func (s *Synthesis) call() {
-	log.Println("runningChan receive")
 	s.runningMux.Lock()
 	s.count -= 1
 	s.runningMux.Unlock()
@@ -45,7 +44,6 @@ func (s *Synthesis) addRun() {
 	s.runningMux.Lock()
 	s.count += 1
 	s.runningMux.Unlock()
-	log.Println(s.count)
 }
 
 func (s *Synthesis) Append(content string) {
@@ -57,9 +55,9 @@ func (s *Synthesis) Append(content string) {
 	lines := reg.Split(content, -1)
 	fmt.Println(lines)
 	for _, line := range lines {
-		fmt.Println(s.pinyin.Pinyin(line))
+		//fmt.Println(s.pinyin.Pinyin(line))
 		s.addRun()
-		s.player.Append(s.getBuffer(s.pinyin.Pinyin(line)))
+		s.worker.Append(s.getBuffer(s.pinyin.Pinyin(line)))
 	}
 
 }
@@ -71,7 +69,7 @@ func (s *Synthesis) Running() bool {
 }
 
 func (s *Synthesis) Close() {
-	s.player.Close()
+	s.worker.Close()
 }
 
 func (s *Synthesis) getBuffer(pinyinList []string) *beep.Buffer {
@@ -88,4 +86,8 @@ func (s *Synthesis) getBuffer(pinyinList []string) *beep.Buffer {
 	}
 
 	return b
+}
+
+func (s *Synthesis) Delivery() *bytes.Buffer {
+	return nil
 }

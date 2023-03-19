@@ -7,6 +7,7 @@ import (
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
 	"github.com/wxxhub/go-speech-synthesis/synthesis/voice"
+	"github.com/wxxhub/go-speech-synthesis/worker/player"
 	"sync"
 	"testing"
 	"time"
@@ -176,7 +177,7 @@ func TestDemo4(t *testing.T) {
 }
 
 func TestSynthesis(t *testing.T) {
-	s := InitSynthesis(DefaultSampleRate)
+	s := InitSynthesis(DefaultSampleRate, player.InitPlayer(16000))
 	defer s.Close()
 	s.Append("你好世界，你好世界s你好世界")
 

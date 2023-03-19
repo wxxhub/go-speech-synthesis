@@ -1,8 +1,16 @@
 package voice
 
-var dataMap map[VOICE][]byte
+import "github.com/faiface/beep"
 
+var dataMap map[VOICE][]byte
+var silenceStreamer beep.Streamer
+
+func GetSilenceBuffer() beep.Streamer {
+	return silenceStreamer
+}
 func init() {
+	silenceStreamer = beep.Silence(5000)
+
 	dataMap = map[VOICE][]byte{
 		VOICE_A:       a,
 		VOICE_A1:      a1,

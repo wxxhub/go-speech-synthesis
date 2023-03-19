@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -9,12 +9,13 @@ import (
 	"github.com/wxxhub/go-speech-synthesis/synthesis/voice"
 	"io"
 	"os"
+	"testing"
 	"time"
 )
 
-func main() {
+func TestMains(t *testing.T) {
 
-	f, err := os.Open("/Users/wxx/GolandProjects/go-speech-synthesis/1.wav")
+	f, err := os.Open("/Users/wxx/GolandProjects/go-speech-synthesis/voice/1.wav")
 	if err != nil {
 		panic(fmt.Sprintf("couldn't open audio file - %v", err))
 	}
